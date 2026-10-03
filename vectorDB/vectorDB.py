@@ -20,7 +20,7 @@ from utils import (
 
 # Kill processes on ports before importing flask_app
 # WARNING: Running this cell twice may kill the active kernel
-# kill_processes_on_ports([5000, 8080, 8097, 50050, 50051])
+# kill_processes_on_ports([5001, 8080, 8097, 50050, 50051])
 import flask_app
 
 with suppress_subprocess_output():
@@ -29,7 +29,7 @@ with suppress_subprocess_output():
         environment_variables={
             "ENABLE_API_BASED_MODULES": "true", # Enable API based modules 
             "ENABLE_MODULES": 'text2vec-transformers, reranker-transformers', # We will be using a transformer model
-            "TRANSFORMERS_INFERENCE_API":"http://127.0.0.1:5000/", # The endpoint the weaviate API will be using to vectorize
-            "RERANKER_INFERENCE_API":"http://127.0.0.1:5000/" # The endpoint the weaviate API will be using to rerank, using flask_API 
+            "TRANSFORMERS_INFERENCE_API":"http://127.0.0.1:5001/", # The endpoint the weaviate API will be using to vectorize
+            "RERANKER_INFERENCE_API":"http://127.0.0.1:5001/" # The endpoint the weaviate API will be using to rerank, using flask_API 
         }
     )
