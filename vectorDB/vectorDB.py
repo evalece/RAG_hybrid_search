@@ -36,6 +36,7 @@ from utils import (
 import flask_app
 client = None
 try: 
+    
     with suppress_subprocess_output():
         client = weaviate.connect_to_embedded(
             persistence_data_path="./.collections", # This is the path where the collections will be saved and persisted. It has a default value, but you can add a custom path
@@ -46,30 +47,28 @@ try:
                 "RERANKER_INFERENCE_API":"http://127.0.0.1:5001/" # The endpoint the weaviate API will be using to rerank, using flask_API 
             }
         )
-
+    #client.collections.delete("example_collection")
     # To-Do: checking textual data ready
     data = joblib.load("data.joblib") # a set of places to visit, with some properties describing each location. The properties here are place, state, description, best_season_to_visit, attractions, budget, user_ratings, last_updated
     # print_object_properties(data[0])
 
-
+    
     # 2.3 input + embedding for vectorDB settings for joblib's visit place data 
-    vector_config_ = [Configure.NamedVectors.text2vec_transformers(
+    vector_config_ = Configure.Vectors.text2vec_transformers(
                     name="vector", # This is the name you will need to access the vectors of the objects in your collection
                     source_properties=['place', 'state', 'description', 'best_season_to_visit', 'attractions', 'budget'], # which properties should be used to generate a vector, they will be appended to each other when vectorizing
                     vectorize_collection_name = False, # This tells the client to not vectorize the collection name. 
                                                     # If True, it will be appended at the beginning of the text to be vectorized
                     inference_url="http://127.0.0.1:5001", # Since we are using an API based vectorizer, you need to pass the URL used to make the calls 
                                                         # This was setup in our Flask application
-                )]
+                )
 
     if not client.collections.exists('example_collection'): # Creates only if the collection does not exist
         try:
             collection = client.collections.create(
                 name='example_collection',
-
-
                 vector_config=vector_config_, # The config we defined before,
-            
+                reranker_config=Configure.Reranker.transformers(), # The reranker config
                 properties=[  # Define properties
                 Property(name="place",vectorize_property_name=True,data_type= DataType.TEXT),
                 Property(name="state",vectorize_property_name=True, data_type=DataType.TEXT),

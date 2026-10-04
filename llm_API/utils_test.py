@@ -1,4 +1,4 @@
-from utils import (
+from LLM_API.utils import (
     generate_with_single_input, # (prompt = query, role = 'user')
     generate_with_multiple_input,
     get_proxy_url,

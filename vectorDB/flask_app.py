@@ -40,6 +40,7 @@ def readiness_check():
 def readiness_check_2():
     return jsonify({'status': 'Ready'}), 200
 
+""" 
 @app.route('/rerank', methods=['POST'])
 def rerank():
     try:
@@ -95,6 +96,67 @@ def rerank():
             })
 
         return jsonify({'scores': reranked_results}) # Top-level key is "scores" (plural)
+
+    except Exception as e:
+        print(f"Unhandled error in /rerank: {e}")
+        return jsonify({'error': str(e)}), 500
+"""
+
+@app.route('/rerank', methods=['POST'])
+def rerank():
+    try:
+        # Try normal JSON parsing first.
+        # silent=True prevents Flask from returning 415
+        # when Weaviate doesn't set application/json.
+        text = request.get_json(silent=True)
+
+        # Fall back to parsing raw request body.
+        if text is None:
+            text_str = request.get_data(as_text=True)
+            text = json.loads(text_str)
+
+        if (
+            not isinstance(text, dict)
+            or 'query' not in text
+            or 'documents' not in text
+        ):
+            return jsonify({
+                'error':
+                "Expected dictionary containing 'query' and 'documents'."
+            }), 400
+
+        query = text['query']
+        documents = text['documents']
+
+        if not documents:
+            return jsonify({'scores': []})
+
+        compares = [(query, doc) for doc in documents]
+
+        inputs = tokenizer(
+            compares,
+            padding=True,
+            truncation=True,
+            return_tensors="pt"
+        )
+
+        with torch.no_grad():
+            outputs = reranker(**inputs)
+
+        scores = outputs.logits.view(-1)
+        scores_list = scores.cpu().tolist()
+
+        reranked_results = []
+        print("RAW RERANKER SCORES:", scores_list) # To-do: Sigmoid variable x, tobe convert to percentile + normalization for model confidence. 
+        for i, doc_text in enumerate(documents):
+            reranked_results.append({
+                "document": doc_text,
+                "score": float(scores_list[i])
+            })
+
+        return jsonify({
+            'scores': reranked_results
+        })
 
     except Exception as e:
         print(f"Unhandled error in /rerank: {e}")
