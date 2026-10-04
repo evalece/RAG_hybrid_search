@@ -1,30 +1,15 @@
 from flask import Flask, request, jsonify
-import threading
 from sentence_transformers import SentenceTransformer
 import os
-from contextlib import redirect_stdout, redirect_stderr
 import json
 import requests
 from typing import Union, List, Dict, Any
-import logging
-import together
-import torch
 import subprocess
-import signal
-import sys
-import httpx
-from openai import OpenAI, DefaultHttpxClient
+
+
 
 # Load a pretrained model from Hugging Face
 model = SentenceTransformer("BAAI/bge-base-en-v1.5", cache_folder = ".models")
-
-
-# Custom transport to bypass SSL verification
-transport = httpx.HTTPTransport(local_address="0.0.0.0", verify=False)
-
-# Create a DefaultHttpxClient instance with the custom transport
-http_client = DefaultHttpxClient(transport=transport)
-
 
 
 
@@ -240,8 +225,7 @@ def generate_with_multiple_input(messages: List[Dict],
     return output_dict
 
 
-
-
+# To-Do: Check if want to keep?
 def print_object_properties(obj: Union[dict, list]) -> None:
     t = ''
     if isinstance(obj, dict):
