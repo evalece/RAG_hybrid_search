@@ -1,26 +1,17 @@
 from flask import Flask, request, jsonify
 import threading
 from sentence_transformers import SentenceTransformer
-import json
-import requests
-from typing import Union
 import os
 from contextlib import redirect_stdout, redirect_stderr
 import json
 import requests
 from typing import Union, List, Dict, Any
-import os
-from contextlib import redirect_stdout, redirect_stderr
 import logging
-import logging
-from typing import Dict, List
 import together
 import torch
-import os
 import subprocess
 import signal
 import sys
-import logging
 import httpx
 from openai import OpenAI, DefaultHttpxClient
 
@@ -158,57 +149,14 @@ def kill_processes_on_ports(
 
     return results
 
-def get_proxy_url():
-    """
-    Get the proxy URL from environment variable or fall back to Together.ai endpoint.
-    Uses TOGETHER_BASE_URL environment variable set in Dockerfile.
-    Defaults to https://api.together.xyz/ if not set.
-    """
-    return os.environ.get('TOGETHER_BASE_URL', 'https://api.together.xyz/')
 
-def get_proxy_headers():
-    """
-    Get the appropriate headers for API calls based on the platform.
-    Returns Authorization header with Together API key if available.
-    """
-    return {"Authorization": os.environ.get("TOGETHER_API_KEY", "")}
-
-def get_together_key():
-    """
-    Get the Together API key from environment variables.
-    """
-    return os.environ.get("TOGETHER_API_KEY", "")
 
 # Define utility functions and classes
 def generate_embedding(prompt: str): #model: str = "BAAI/bge-base-en-v1.5", together_api_key = None, **kwargs):
     return model.encode(prompt).tolist()
-    payload = {
-        "model": model,
-        "input": prompt,
-        **kwargs
-    }
-    if (not together_api_key) and ('TOGETHER_API_KEY' not in os.environ):
-        client = OpenAI(
-    api_key = '', # Set any as dlai proxy does not use it. Set the together api key if using the together endpoint
-    base_url="http://proxy.dlai.link/coursera_proxy/together/", # If using together endpoint, add it here https://api.together.xyz/
-   http_client=http_client, # ssl bypass to make it work via proxy calls, remove it if running with together.ai endpoint 
-)
-        try:
-            json_dict = client.embeddings.create(**payload).model_dump()
-            return json_dict['data'][0]['embedding']
-        except Exception as e:
-            raise Exception(f"Failed to get correct output from LLM call.\nException: {e}")
-    else:
-        if together_api_key is None:
-            together_api_key = os.environ['TOGETHER_API_KEY']
-        client = Together(api_key=together_api_key)
-        try:
-            json_dict = client.embeddings.create(**payload).model_dump()
-            return json_dict['data'][0]['embedding']
-        except Exception as e:
-            raise Exception(f"Failed to get correct output from LLM call.\nException: {e}")
+  
 
-
+# To-Do: check if want to keep
 def generate_with_single_input(prompt: str, 
                                role: str = 'user', 
                                top_p: float = None, 
@@ -244,7 +192,7 @@ def generate_with_single_input(prompt: str,
     else:
         if together_api_key is None:
             together_api_key = os.environ['TOGETHER_API_KEY']
-        client = Together(api_key =  together_api_key)
+        client = Together(api_key =  together_api_key) # To-do : try use alternative, togather charges $$
         json_dict = client.chat.completions.create(**payload).model_dump()
         json_dict['choices'][-1]['message']['role'] = json_dict['choices'][-1]['message']['role'].name.lower()
     try:
@@ -253,7 +201,7 @@ def generate_with_single_input(prompt: str,
         raise Exception(f"Failed to get correct output dict. Please try again. Error: {e}")
     return output_dict
 
-
+# To-Do: check if want to keep 
 def generate_with_multiple_input(messages: List[Dict], 
                                top_p: float = 1, 
                                temperature: float = 1,
