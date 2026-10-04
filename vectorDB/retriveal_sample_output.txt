@@ -1,0 +1,20 @@
+Sematic Search:I want suggestions to travel during Winter. I want cheap places.
+best_season_to_visit: Winter
+state: Quebec
+description: A historic city especially popular in winter for snowy streets, festivals, outdoor activities, and European-style architecture.
+budget: Low
+attractions: Old Quebec, Quebec Winter Carnival, Terrasse Dufferin
+last_updated: 2026-10-04 00:00:00+00:00
+user_ratings: 4.7
+place: Quebec City
+
+best_season_to_visit: Winter
+state: Ontario
+description: Canada's capital offers museums, historic landmarks, winter skating, and relatively affordable sightseeing.
+budget: Medium
+attractions: Rideau Canal, Parliament Hill, Canadian Museum of History
+last_updated: 2026-10-04 00:00:00+00:00
+user_ratings: 4.4
+place: Ottawa
+
+

@@ -1,3 +1,13 @@
+"""
+Reference codebase :  https://learn.deeplearning.ai/courses/retrieval-augmented-generation/lesson/ssvq4/introduction-to-the-weaviate-api
+This file takes data.joblib and insert it to weaviate (vectorDB; ran locally) with port 5001:rerank as output port; as per weaviate source code
+
+Dedupes are made using generate_uuid5 hash with data content 
+
+flask_app deployes corresponding ports 
+
+"""
+
 from weaviate.classes.config import Configure, Property, DataType
 from weaviate.classes.query import Filter
 from typing import List
@@ -77,7 +87,7 @@ try:
     else:
         collection = client.collections.get("example_collection")
 
-    print(collection) # check if client  created visited places collecitons
+    # print(collection) # check if client  created visited places collecitons
 
 
 
