@@ -5,7 +5,6 @@ This file takes data.joblib and insert it to weaviate (vectorDB; ran locally) wi
 Dedupes are made using generate_uuid5 hash with data content 
 
 flask_app deployes corresponding ports 
-
 """
 
 from weaviate.classes.config import Configure, Property, DataType
@@ -86,8 +85,6 @@ try:
         collection = client.collections.get("example_collection")
 
     # print(collection) # check if client  created visited places collecitons
-
-
 
     ### 2.4 Adding elements into a Collection 
 

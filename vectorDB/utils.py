@@ -1,3 +1,7 @@
+"""
+Reference codebase :  https://learn.deeplearning.ai/courses/retrieval-augmented-generation/lesson/ssvq4/introduction-to-the-weaviate-api
+Modfification has been made.
+"""
 from flask import Flask, request, jsonify
 from sentence_transformers import SentenceTransformer
 import os
@@ -6,12 +10,8 @@ import requests
 from typing import Union, List, Dict, Any
 import subprocess
 
-
-
 # Load a pretrained model from Hugging Face
 model = SentenceTransformer("BAAI/bge-base-en-v1.5", cache_folder = ".models")
-
-
 
 def kill_processes_on_ports(
     ports: List[int],
@@ -134,23 +134,21 @@ def kill_processes_on_ports(
 
     return results
 
-
-
 # Define utility functions and classes
 def generate_embedding(prompt: str): #model: str = "BAAI/bge-base-en-v1.5", together_api_key = None, **kwargs):
     return model.encode(prompt).tolist()
   
-
 # To-Do: check if want to keep
-def generate_with_single_input(prompt: str, 
-                               role: str = 'user', 
-                               top_p: float = None, 
-                               temperature: float = None,
-                               max_tokens: int = 500,
-                               model: str ="Qwen/Qwen3.5-9B",
-                               together_api_key = None,
-                              **kwargs):
-    
+def generate_with_single_input(
+        prompt: str, 
+        role: str = 'user', 
+        top_p: float = None, 
+        temperature: float = None,
+        max_tokens: int = 500,
+        model: str ="Qwen/Qwen3.5-9B",
+        together_api_key = None,
+        **kwargs):
+
     if top_p is None:
         top_p = 'none'
     if temperature is None:
@@ -187,13 +185,14 @@ def generate_with_single_input(prompt: str,
     return output_dict
 
 # To-Do: check if want to keep 
-def generate_with_multiple_input(messages: List[Dict], 
-                               top_p: float = 1, 
-                               temperature: float = 1,
-                               max_tokens: int = 500,
-                               model: str ="Qwen/Qwen3.5-9B", 
-                                together_api_key = None,
-                                **kwargs):
+def generate_with_multiple_input(
+        messages: List[Dict], 
+        top_p: float = 1, 
+        temperature: float = 1,
+        max_tokens: int = 500,
+        model: str ="Qwen/Qwen3.5-9B", 
+        together_api_key = None,
+        **kwargs):
     payload = {
         "model": model,
         "messages": messages,
