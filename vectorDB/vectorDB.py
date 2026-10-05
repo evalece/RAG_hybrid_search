@@ -10,15 +10,14 @@ flask_app deployes corresponding ports
 
 from weaviate.classes.config import Configure, Property, DataType
 from weaviate.classes.query import Filter
-from typing import List
 from tqdm import tqdm
 import joblib
 import weaviate
-import re
 from weaviate.util import generate_uuid5
 from pprint import pprint
-import os
 from dotenv import load_dotenv
+import sys
+import time
 
 load_dotenv()
 
@@ -33,7 +32,7 @@ from utils import (
 # WARNING: Running this cell twice may kill the active kernel
 # kill_processes_on_ports([5001, 8080, 8097, 50050, 50051])
 
-import flask_app
+import flask_app # Create a thread to open port API gateways 
 client = None
 try: 
     
@@ -109,6 +108,11 @@ try:
     # 2. Insert to vectorDB completion, check  collection size:
     print("Collection size inserted = ", len(collection))
 
+    # Keep this Python process alive
+    print("running vectorDB with weaviate.")
+    while True:
+        time.sleep(1)
+
 except KeyboardInterrupt:
     print("\nInterrupted by user.")
 
@@ -116,3 +120,4 @@ finally:
     if client is not None:
         client.close()
         print("Weaviate client closed.")
+        sys.exit(1) # shut down process

@@ -69,20 +69,33 @@ try:
         print_object_properties(obj.properties)
     """
 
-    """
-    ######## Hybrid Search; Alpha = % of BM25 
-    result = collection.query.hybrid(query = q, 
-                                        filters = Filter.by_property('budget').contains_any(['Low','Moderate']),
-                                        alpha = 0.3,
-                                        limit = 2)
+    
+    ######## Hybrid Search; Alpha = % of BM25  + Reranking 
+    print("############ Hybrid Search ####### ")
+    result = collection.query.hybrid(
+        query = q, 
+        filters = Filter.by_property('budget').contains_any(['Low','Moderate']),
+        alpha = 0.3,
+        limit = 2,
+        rerank=Rerank(
+            prop=prop_,                  # The property to rerank on
+            query=q  # If not provided, the original query will be used
+            ),
+        return_metadata=MetadataQuery( 
+            score=True
+        )
+    )
     print(f'Hybrid Search:{q}')
     for obj in result.objects:
         print_object_properties(obj.properties)
+        print("metadata.rerank_score:", obj.metadata.rerank_score)
+        print("----------------------")
 
-    """
-
-    ##### Reranking 
     
+
+    ######## near_text + Reranking 
+    """ 
+    print("############ near text Search ####### ")
     response = collection.query.near_text( #  near text is vector search 
         query= q,  
         limit=5,
@@ -91,15 +104,17 @@ try:
             query=q  # If not provided, the original query will be used
         ),
         return_metadata=MetadataQuery( 
-        score=True
-    )
+            score=True
+        )
     )
     print(f'Reranking on:{prop_} using query: {q}')
     for obj in response.objects:
         print_object_properties(obj.properties)
-        print("Rerank score:", obj.metadata.score)
+
+        print("metadata.rerank_score:", obj.metadata.rerank_score)
         print("----------------------")
 
+    """
     
 
 except KeyboardInterrupt:

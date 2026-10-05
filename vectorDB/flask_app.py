@@ -4,6 +4,9 @@ Code provided by https://learn.deeplearning.ai/courses/retrieval-augmented-gener
 The follow code creates localhost endpoint for retrieval reranker 
 
 '''
+## To-do: optimizing thread and process coordination on shut down
+
+
 from flask import Flask, request, jsonify
 import threading
 import json
@@ -144,14 +147,20 @@ def rerank():
             outputs = reranker(**inputs)
 
         scores = outputs.logits.view(-1)
-        scores_list = scores.cpu().tolist()
+        scores_list =  np.array(scores.cpu().tolist())
 
         reranked_results = []
-        print("RAW RERANKER SCORES:", scores_list) # To-do: Sigmoid variable x, tobe convert to percentile + normalization for model confidence. 
+        print("RAW RERANKER SCORES:", scores_list) # To-do: Sigmoid variable x, to be converted to percentile + normalization for model confidence. 
+
+        # Sigmoid transformation, 
+        # Equivalent mathematically to the CDF of a standard logistic distribution.
+        
+        probabilities = 1 / (1 + np.exp(-scores_list)) 
+        print("probabilities",probabilities)
         for i, doc_text in enumerate(documents):
             reranked_results.append({
                 "document": doc_text,
-                "score": float(scores_list[i])
+                "score": float(probabilities[i]) 
             })
 
         return jsonify({
