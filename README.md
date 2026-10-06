@@ -357,8 +357,10 @@ The broader goal is to understand **why a RAG system retrieves a document**, rat
 
 ## Reference
 
-Codebase reference: 
+- Codebase reference 
 [1] DeepLearning AI. Retrieval Augmented Generation (RAG). https://learn.deeplearning.ai/courses/retrieval-augmented-generation/
+
+
 
 ## Use of ChatGPT
 1. Debugging and first version of Readme.md
