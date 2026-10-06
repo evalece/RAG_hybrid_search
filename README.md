@@ -357,8 +357,9 @@ The broader goal is to understand **why a RAG system retrieves a document**, rat
 
 ## Reference
 
-- Codebase reference 
-└── [1] DeepLearning AI. Retrieval Augmented Generation (RAG). https://learn.deeplearning.ai/courses/retrieval-augmented-generation/
+- **Codebase reference**
+    [1] DeepLearning AI. *Retrieval Augmented Generation (RAG)*. 
+    https://learn.deeplearning.ai/courses/retrieval-augmented-generation/
 
 
 
