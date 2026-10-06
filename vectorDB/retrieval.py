@@ -9,23 +9,20 @@ from weaviate.classes.query import Rerank, MetadataQuery
 
 load_dotenv()
 
-
 #### debugging 
  
-    ######## Metadata filtering 
-    # Here we are fetching 2 objects with a filter by property, filtering by 'user_ratings, only objects with value greater or equal to 3.5'
-    #result = collection.query.fetch_objects(limit = 2, filters = Filter.by_property('user_ratings').greater_or_equal(3.5))
- 
-    #print("result; filter by user rating > 3.5")
-    #for obj in result.objects:
-        #print_object_properties(obj.properties)
-    
+######## Metadata filtering 
+# Here we are fetching 2 objects with a filter by property, filtering by 'user_ratings, only objects with value greater or equal to 3.5'
+#result = collection.query.fetch_objects(limit = 2, filters = Filter.by_property('user_ratings').greater_or_equal(3.5))
 
+#print("result; filter by user rating > 3.5")
+#for obj in result.objects:
+    #print_object_properties(obj.properties)
     
-######## Hybrid Search; Alpha = % of BM25  + Reranking 
+######## Hybrid Search; Alpha = % of BM25  + Reranking ########
 def hybrid_S(client, q, prop_, alpha_,limit_): # client= connection, q= query, prop_= properties, alpha % of BM25
     collection = client.collections.get("example_collection")
-    print("############ Hybrid Search ####### ")
+    print("######## Hybrid Search ####### ")
     result = collection.query.hybrid(
         query = q, 
         filters = Filter.by_property('budget').contains_any(['Low','Moderate']),
@@ -40,7 +37,8 @@ def hybrid_S(client, q, prop_, alpha_,limit_): # client= connection, q= query, p
         )
     )
     return result.objects
-        #### debug 
+
+#### debug 
 """
     print(f'Hybrid Search:{q}')
     for obj in result.objects:
@@ -48,5 +46,3 @@ def hybrid_S(client, q, prop_, alpha_,limit_): # client= connection, q= query, p
         print("metadata.rerank_score:", obj.metadata.rerank_score)
         print("----------------------")
 """
-
-

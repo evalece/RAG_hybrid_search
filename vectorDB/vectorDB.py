@@ -8,12 +8,10 @@ flask_app deployes corresponding ports
 """
 
 from weaviate.classes.config import Configure, Property, DataType
-from weaviate.classes.query import Filter
 from tqdm import tqdm
 import joblib
 import weaviate
 from weaviate.util import generate_uuid5
-from pprint import pprint
 from dotenv import load_dotenv
 import sys
 import time
@@ -22,16 +20,13 @@ load_dotenv()
 
 from utils import (
     suppress_subprocess_output,
-    kill_processes_on_ports,
-    print_object_properties
+
 )
 
-
-# Kill processes on ports before importing flask_app
 # WARNING: Running this cell twice may kill the active kernel
-# kill_processes_on_ports([5001, 8080, 8097, 50050, 50051])
+# kill_processes_on_ports([5001, 8080, 8097, 50050, 50051]) # for flask 
 
-import flask_app # Create a thread to open port API gateways 
+import flask_app # Create a thread to open port API gateways  
 client = None
 try: 
     
@@ -50,8 +45,7 @@ try:
     data = joblib.load("data.joblib") # a set of places to visit, with some properties describing each location. The properties here are place, state, description, best_season_to_visit, attractions, budget, user_ratings, last_updated
     # print_object_properties(data[0])
 
-    
-    # 2.3 input + embedding for vectorDB settings for joblib's visit place data 
+    # input + embedding for vectorDB settings for joblib's visit place data 
     vector_config_ = Configure.Vectors.text2vec_transformers(
                     name="vector", # This is the name you will need to access the vectors of the objects in your collection
                     source_properties=['place', 'state', 'description', 'best_season_to_visit', 'attractions', 'budget'], # which properties should be used to generate a vector, they will be appended to each other when vectorizing
@@ -79,31 +73,32 @@ try:
                         
             ]
             )
+
+            # Set up a batch process with specified fixed size and concurrency
+            with collection.batch.fixed_size(batch_size=1, concurrent_requests=1) as batch:
+                # Iterate over a subset of the dataset
+                for document in tqdm(data): # tqdm is a library to show progress bars
+                        # Generate a UUID based on the article_content text for unique identification
+                        uuid = generate_uuid5(document)
+
+                        # Add the object to the batch with properties and UUID. 
+                        # properties expects a dictionary with the keys being the properties.
+                        batch.add_object( 
+                            properties=document,
+                            uuid=uuid,
+                        )
+
+                # Insert to vectorDB completion, check  collection size:
+                print("Collection size inserted = ", len(collection))
+
         except Exception as e:
             print(e)
-    else:
-        collection = client.collections.get("example_collection")
+        else:
+            print("Loading existing collection...")
+            collection = client.collections.get("example_collection")
+            print("Collection size:", len(collection))
 
-    # print(collection) # check if client  created visited places collecitons
-
-    ### 2.4 Adding elements into a Collection 
-
-    # Set up a batch process with specified fixed size and concurrency
-    with collection.batch.fixed_size(batch_size=1, concurrent_requests=1) as batch:
-        # Iterate over a subset of the dataset
-        for document in tqdm(data): # tqdm is a library to show progress bars
-                # Generate a UUID based on the article_content text for unique identification
-                uuid = generate_uuid5(document)
-
-                # Add the object to the batch with properties and UUID. 
-                # properties expects a dictionary with the keys being the properties.
-                batch.add_object( 
-                    properties=document,
-                    uuid=uuid,
-                )
-
-    # 2. Insert to vectorDB completion, check  collection size:
-    print("Collection size inserted = ", len(collection))
+##### Allow DB to standby
 
     # Keep this Python process alive
     print("running vectorDB with weaviate.")
