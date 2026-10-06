@@ -1,3 +1,10 @@
+Launch VectorDB:
+`python3 vectorDB.py`
+
+then start retrieval:
+`python3 retrieval.py`
+
+
 example of output: 
 
 RAW RERANKER SCORES: [ -9.81591988 -10.17363644 -10.16163731 -10.18857288]
