@@ -355,10 +355,10 @@ The reference implementations have been modified and extended to experiment with
 The broader goal is to understand **why a RAG system retrieves a document**, rather than only passing data through a high-level RAG framework.
 
 
-# Reference
+## Reference
 
 Codebase reference: 
 [1]https://learn.deeplearning.ai/courses/retrieval-augmented-generation/
 
-# Use of GPT:
+## Use of GPT:
 1. Debugging and first version of Readme.md
