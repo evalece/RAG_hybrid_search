@@ -3,6 +3,10 @@ Codebase reference: https://learn.deeplearning.ai/courses/retrieval-augmented-ge
 This code retrieves info using hybrid search, BM25 and semantic search in additional of metadata filtering from what has beem previuosly stored in vectorDB 
 
 """
+# To-do:
+# in property filtering, try making them a generic purpose querying 
+
+
 from weaviate.classes.query import Filter
 from dotenv import load_dotenv
 from weaviate.classes.query import Rerank, MetadataQuery
