@@ -21,6 +21,15 @@ port=8079,
 grpc_port=50050, # gRPC to Weaviate
 )
 
+#### Strategy
+# Goal:
+# chunk online text data such as books
+# 
+# def get_chunks_xxxx : returns array of chunked data
+# def get_book_text_objects : returns metadata applying to all chunks of the same book 
+# def build_chunk_objs : returns an arrayo of dict, each containing get_book_text_objects() and get_chunks_xxxx[i], id=i 
+# 
+
 
 ## fixed size chunking
 def get_chunks_fixed_size_with_overlap(text: str, chunk_size: int, overlap_fraction: float) -> List[str]:
@@ -64,6 +73,9 @@ def get_chunks_fixed_size_with_overlap(text: str, chunk_size: int, overlap_fract
 
 ## Variable size chunking
 
+
+
+
 def mixed_chunking(source_text, min_len):
     """
     Splits the given source_text into chunks using a mix of fixed-size and variable-size chunking.
@@ -105,6 +117,7 @@ def mixed_chunking(source_text, min_len):
 
 
 ## create book object by extract basic info except chunk into dict
+### hard-coded an assumed sanitized data source, parsing each json object and download path into list of dict
 def get_book_text_objects():
     # Source location
     text_objs = list()
@@ -133,7 +146,7 @@ def get_book_text_objects():
 
 
 ## create chunk object
-def build_chunk_objs(book_text_obj, chunks):
+def build_chunk_objs(book_text_obj, chunks, stra): 
     """
     Constructs a list of chunk objects from a given book text object 
     and its associated chunks.
@@ -155,6 +168,7 @@ def build_chunk_objs(book_text_obj, chunks):
         chunk_obj = {
             "chapter_title": book_text_obj["chapter_title"],  # Chapter title from the book text object
             "filename": book_text_obj["filename"],            # Filename from the book text object
+            "chunking_strategy": stra,                            
             "chunk": c,                                       # The actual chunk of text
             "chunk_index": i                                  # The index of the chunk in the list
         }
@@ -163,3 +177,76 @@ def build_chunk_objs(book_text_obj, chunks):
 
     # Return the list of chunk objects
     return chunk_objs
+
+
+
+
+#### Connect to Vector DB to Insert chunked data, assume vectorDB ready
+
+client = weaviate.connect_to_local(   #check lsof -nP -iTCP -sTCP:LISTEN if any, variations due to standalone implemntation
+host="127.0.0.1",  # Use a string to specify the host
+port=8079,
+grpc_port=50050, # gRPC to Weaviate
+)
+
+vector_config_= Configure.Vectors.text2vec_transformers(
+        name="vector", # This is the name we will need to access the vectors of the objects in our collection
+        #source_properties=['chunk'], # which properties should be used to generate a vector, they will be appended to each other when vectorizing
+        vectorize_collection_name = False, # This tells the client to not vectorize the collection name. 
+                                            # If True, it will be appended at the beginning of the text to be vectorized
+        inference_url="http://127.0.0.1:5001", # Since we are using an API based vectorizer, we need to pass the URL used to make the calls 
+                                                # This was setup in our Flask application
+    )
+
+if not client.collections.exists("chunking_example"):
+    collection= client.collections.create(
+        name= "chunking_example",
+        vector_config=vector_config_, # The config we defined before,
+        reranker_config=Configure.Reranker.transformers(), # The reranker config
+            properties=[  # Define properties
+            Property(name="chunk",data_type= DataType.TEXT),
+            Property(name="chapter_title", data_type=DataType.TEXT),
+            Property(name="filename",data_type=DataType.TEXT),
+            Property(name="chunking_strategy",data_type=DataType.TEXT, tokenization = Tokenization.FIELD), # tokenization = Tokenization.FIELD means that the entire word will be treated as a token,
+            Property(name="chunk_index",data_type=DataType.INT),
+        ]       
+        )
+else:
+    collection = client.collections.get("chunking_example")
+
+
+######### adding chunks to the collection
+# Get multiple sets of chunks - according to chunking strategy
+book_text_objs= get_book_text_objects()
+
+chunk_obj_sets = dict()
+for book_text_obj in book_text_objs:
+    text = book_text_obj["body"]  # Get the object's text body
+
+    # Loop through chunking strategies:
+    for strategy_name, chunks in [
+        ["fixed_size_25", get_chunks_fixed_size_with_overlap(text, 25, 0.2)] 
+       #["para_chunks_min_25", mixed_chunking(text)]
+    ]:
+        chunk_objs = build_chunk_objs(book_text_obj, chunks, strategy_name)
+
+        if strategy_name not in chunk_obj_sets.keys():
+            chunk_obj_sets[strategy_name] = list()
+
+        chunk_obj_sets[strategy_name] += chunk_objs
+
+if len(collection) == 0:
+    with collection.batch.fixed_size(batch_size=1, concurrent_requests=20) as batch:
+        for chunking_strategy, chunk_objects in tqdm.tqdm(chunk_obj_sets.items()):
+            for chunk_obj in chunk_objects:
+                chunk_obj["chunking_strategy"] = chunking_strategy
+                batch.add_object(
+                    properties=chunk_obj,
+                    uuid=generate_uuid5(chunk_obj)
+                )
+                
+print(f"Total count: {collection.aggregate.over_all().total_count}")
+for chunking_strategy in chunk_obj_sets.keys():
+    where_filter = Filter.by_property('chunking_strategy').equal(chunking_strategy) # Filter by chunking strategy
+    count = collection.aggregate.over_all(filters = where_filter).total_count # Aggregate with filtering
+    print(f"Object count for {chunking_strategy}: {count}")

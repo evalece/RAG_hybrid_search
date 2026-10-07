@@ -19,8 +19,8 @@ load_dotenv()
 #for obj in result.objects:
     #print_object_properties(obj.properties)
     
-######## Hybrid Search; Alpha = % of BM25  + Reranking ########
-def hybrid_S(client, q, prop_, alpha_,limit_): # client= connection, q= query, prop_= properties, alpha % of BM25
+######## Hybrid Search; Alpha = % of semantic  + Reranking ########
+def hybrid_S(client, q, prop_, alpha_,limit_): # client= connection, q= query, prop_= properties, alpha % of semantic
     collection = client.collections.get("example_collection")
     print("######## Hybrid Search ####### ")
     result = collection.query.hybrid(
