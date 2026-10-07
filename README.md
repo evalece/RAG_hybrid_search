@@ -4,6 +4,25 @@ A local Retrieval-Augmented Generation (RAG) prototype exploring the retrieval p
 
 Rather than treating retrieval as a black box, this project separates the major retrieval stages so their behavior, scores, and outputs can be inspected and evaluated independently.
 
+## Sample Output 
+
+### Retrieved Information 
+===== Object 0 =====
+=== A Short History of Git As with many great things in life, Git began with a bit of creative destruction and fiery controversy. The
+
+===== Object 1 =====
+kernel efficiently (speed and data size) Since its birth in 2005, Git has evolved and matured to be easy to use and yet retain these initial qualities. It's amazingly fast,
+
+### Generation
+- Search string: history of git
+- Chunking Strategy: fixed_size_25:
+- Response:
+        Based solely on the provided text, here is the history of Git in a few short points:
+
+*   **Origin Story:** Git's birth in 2005 began with "creative destruction and fiery controversy."
+*   **Evolution:** Since its inception, Git has evolved from its initial state to become easy to use while retaining its core qualities.
+*   **Performance:** It has grown to be "amazingly fast," maintaining the efficient use of speed and data size characteristic of the kernel.
+
 ## Architecture
 
 ```text
@@ -327,6 +346,7 @@ Embedded Weaviate data is persisted locally under:
 - [x] Cross-encoder reranking
 - [x] Local vectorization API
 - [x] Local reranking API
+- [x] RAG generation using retrieved context (prototype)
 
 ### Next Steps
 

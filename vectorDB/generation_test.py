@@ -1,5 +1,6 @@
 import weaviate
 from weaviate.classes.query import Filter
+from llm_API.utils import generate_with_single_input
 
 client = weaviate.connect_to_local(   #check lsof -nP -iTCP -sTCP:LISTEN if any, variations due to standalone implemntation
 host="127.0.0.1",  # Use a string to specify the host
@@ -22,3 +23,14 @@ for chunking_strategy in chunk_s:
         print(f"===== Object {i} =====")
         print(f"{obj.properties['chunk']}")
         print()
+
+PROMPT = "Using this information and only this information, please explain {search_string} in a few short points.\nContext: {context}"
+context_string = ""
+for obj in response.objects:
+        context_string += obj.properties['chunk'] + '\n'
+prompt = PROMPT.format(search_string = search_string, context = context_string)
+response = generate_with_single_input(prompt, role = 'assistant')
+print(f"Search string: {search_string}")
+print(f"Chunking Strategy: {chunking_strategy}:")
+print(f"Response:\n\t{response['content']}")
+print()

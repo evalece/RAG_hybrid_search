@@ -9,6 +9,7 @@ import json
 import requests
 from typing import Union, List, Dict, Any
 import subprocess
+import together
 
 # Load a pretrained model from Hugging Face
 model = SentenceTransformer("BAAI/bge-base-en-v1.5", cache_folder = ".models")
@@ -146,7 +147,7 @@ def generate_with_single_input(
         temperature: float = None,
         max_tokens: int = 500,
         model: str ="Qwen/Qwen3.5-9B",
-        together_api_key = None,
+        together_api_key = os.environ['TOGETHER_API_KEY'],
         **kwargs):
 
     if top_p is None:
